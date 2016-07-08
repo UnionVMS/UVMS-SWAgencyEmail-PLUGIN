@@ -22,7 +22,7 @@
         <infra.version>1.0.0</infra.version>
         <common.version.v2>2.0.4</common.version.v2>
         <common.ejb.version>1.0.0</common.ejb.version>
-        <release.branch.name>uvms-2.0.6-kili</release.branch.name>
+        <release.branch.name>uvms-git-release</release.branch.name>
         <project.scm.id>github</project.scm.id>
         <maven-release-plugin>2.5.3</maven-release-plugin>
     </properties>
