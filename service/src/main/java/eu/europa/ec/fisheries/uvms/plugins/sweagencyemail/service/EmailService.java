@@ -14,6 +14,8 @@ package eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.service;
 import eu.europa.ec.fisheries.schema.exchange.plugin.types.v1.EmailType;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.xml.ws.soap.SOAPFaultException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +71,8 @@ public class EmailService {
         } catch (InfraCatchException ex) {
             LOG.error("Unable to communicate with Infrastructure Service, HavErrorMessage: " + ex.getFaultInfo().getHaVText() + " HavErrorCode: " + ex.getFaultInfo().getHaVCode());
             return null;
+        } catch (Exception e) {
+            LOG.error("Unable to communicate with Infrastructure Service. Tried to send message to {} over {}. Exception message: {}", emailType.getTo(), endpoint, e.getMessage());
         }
     }
 }
