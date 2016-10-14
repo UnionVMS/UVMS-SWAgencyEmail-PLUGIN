@@ -73,6 +73,7 @@ public class EmailService {
             return null;
         } catch (Exception e) {
             LOG.error("Unable to communicate with Infrastructure Service. Tried to send message to {} over {}. Exception message: {}", emailType.getTo(), endpoint, e.getMessage());
+            return null;
         }
     }
 }
