@@ -12,41 +12,71 @@ copy of the GNU General Public License along with the IFDM Suite. If not, see <h
 package eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.producer;
 
 import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
+
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
+import eu.europa.ec.fisheries.uvms.message.JMSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.constants.ModuleQueue;
-import javax.jms.Queue;
-import javax.jms.Topic;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 @Stateless
 @LocalBean
 public class PluginMessageProducer {
 
-    @Resource(mappedName = ExchangeModelConstants.EXCHANGE_MESSAGE_IN_QUEUE)
     private Queue exchangeQueue;
-
-    @Resource(mappedName = ExchangeModelConstants.PLUGIN_EVENTBUS)
     private Topic eventBus;
 
-    @Resource(lookup = ExchangeModelConstants.CONNECTION_FACTORY)
     private ConnectionFactory connectionFactory;
 
     private Connection connection = null;
     private Session session = null;
 
     final static Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
+
+    @PostConstruct
+    public void resourceLookup() {
+        LOG.debug("Open connection to JMS broker");
+        InitialContext ctx;
+        try {
+            ctx = new InitialContext();
+        } catch (Exception e) {
+            LOG.error("Failed to get InitialContext",e);
+            throw new RuntimeException(e);
+        }
+        try {
+            connectionFactory = (QueueConnectionFactory) ctx.lookup(ExchangeModelConstants.CONNECTION_FACTORY);
+        } catch (NamingException ne) {
+            //if we did not find the connection factory we might need to add java:/ at the start
+            LOG.debug("Connection Factory lookup failed for " + ExchangeModelConstants.CONNECTION_FACTORY);
+            String wfName = "java:/" + ExchangeModelConstants.CONNECTION_FACTORY;
+            try {
+                LOG.debug("trying " + wfName);
+                connectionFactory = (QueueConnectionFactory) ctx.lookup(wfName);
+            } catch (Exception e) {
+                LOG.error("Connection Factory lookup failed for both " + ExchangeModelConstants.CONNECTION_FACTORY  + " and " + wfName);
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            connection = connectionFactory.createConnection();
+            connection.start();
+        } catch (JMSException ex) {
+            LOG.error("Error when open connection to JMS broker");
+        }
+        exchangeQueue = JMSUtils.lookupQueue(ctx, ExchangeModelConstants.EXCHANGE_MESSAGE_IN_QUEUE);
+        eventBus = JMSUtils.lookupTopic(ctx, ExchangeModelConstants.PLUGIN_EVENTBUS);
+    }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void sendResponseMessage(String text, TextMessage requestMessage) throws JMSException {
