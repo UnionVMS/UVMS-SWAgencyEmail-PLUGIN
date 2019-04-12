@@ -11,7 +11,6 @@ copy of the GNU General Public License along with the IFDM Suite. If not, see <h
  */
 package eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.producer;
 
-import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -27,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.constants.ModuleQueue;
+import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
@@ -48,7 +48,6 @@ public class PluginMessageProducer {
 
     final static Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void sendResponseMessage(String text, TextMessage requestMessage) throws JMSException {
         try {
             connectQueue();
@@ -68,13 +67,13 @@ public class PluginMessageProducer {
         }
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public String sendModuleMessage(String text, ModuleQueue queue) throws JMSException {
+    public String sendModuleMessage(String text, ModuleQueue queue, String function) throws JMSException {
         try {
             connectQueue();
 
             TextMessage message = session.createTextMessage();
             message.setText(text);
+            message.setStringProperty("FUNCTION", function);
 
             switch (queue) {
                 case EXCHANGE:
@@ -94,14 +93,15 @@ public class PluginMessageProducer {
         }
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public String sendEventBusMessage(String text, String serviceName) throws JMSException {
+    public String sendEventBusMessage(String text, String serviceName, String function) throws JMSException {
         try {
             connectQueue();
 
             TextMessage message = session.createTextMessage();
             message.setText(text);
             message.setStringProperty(ExchangeModelConstants.SERVICE_NAME, serviceName);
+            message.setStringProperty("FUNCTION", function);
+
 
             session.createProducer(eventBus).send(message);
 
