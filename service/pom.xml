@@ -26,8 +26,6 @@
             <groupId>eu.europa.ec.fisheries.uvms.exchange</groupId>
             <artifactId>exchange-model</artifactId>
             <version>${exchange.model.version}</version>
-            <classifier>${date.classifier}</classifier>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>se.havochvatten.service.client</groupId>
@@ -45,8 +43,8 @@
             <version>${common.ejb.version}</version>
         </dependency>
         <dependency>
-            <groupId>eu.europa.ec.fisheries.uvms</groupId>
-            <artifactId>uvms-commons</artifactId>
+            <groupId>eu.europa.ec.fisheries.uvms.commons</groupId>
+            <artifactId>uvms-commons-message</artifactId>
             <version>${uvms.common.version}</version>
             <exclusions>
             	<exclusion>

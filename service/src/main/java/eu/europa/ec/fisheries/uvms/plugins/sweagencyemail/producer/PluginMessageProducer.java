@@ -12,111 +12,92 @@ copy of the GNU General Public License along with the IFDM Suite. If not, see <h
 package eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.producer;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
+import javax.jms.*;
 
+import eu.europa.ec.fisheries.uvms.commons.message.api.MessageConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
-import eu.europa.ec.fisheries.uvms.message.JMSUtils;
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.constants.ModuleQueue;
 
 @Stateless
 @LocalBean
 public class PluginMessageProducer {
 
+    final static Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
+
+    @Resource(mappedName = "java:/" + ExchangeModelConstants.EXCHANGE_MESSAGE_IN_QUEUE)
     private Queue exchangeQueue;
+
+
+    @Resource(mappedName = "java:/" + ExchangeModelConstants.PLUGIN_EVENTBUS)
     private Topic eventBus;
 
+    @Resource(mappedName = "java:/ConnectionFactory")
     private ConnectionFactory connectionFactory;
-    final static Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
 
     @PostConstruct
     public void resourceLookup() {
-        connectionFactory = JMSUtils.lookupConnectionFactory();
-        exchangeQueue = JMSUtils.lookupQueue(ExchangeModelConstants.EXCHANGE_MESSAGE_IN_QUEUE);
-        eventBus = JMSUtils.lookupTopic(ExchangeModelConstants.PLUGIN_EVENTBUS);
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void sendResponseMessage(String text, TextMessage requestMessage) throws JMSException {
-    	Connection connection=null;
-    	try {
-            connection = connectionFactory.createConnection();
-            final Session session = JMSUtils.connectToQueue(connection);
-
+        try (Connection connection = connectionFactory.createConnection();
+             Session session = connection.createSession(false, 1);
+             MessageProducer producer = session.createProducer(requestMessage.getJMSReplyTo());
+        ) {
             TextMessage message = session.createTextMessage();
             message.setJMSDestination(requestMessage.getJMSReplyTo());
             message.setJMSCorrelationID(requestMessage.getJMSMessageID());
             message.setText(text);
 
-            session.createProducer(requestMessage.getJMSReplyTo()).send(message);
-
-        } catch (JMSException e) {
-            LOG.error("[ Error when sending jms message. {}] {}",text, e.getMessage());
-            throw new JMSException(e.getMessage());
-        } finally {
-        	JMSUtils.disconnectQueue(connection);
+            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+            producer.send(message);
         }
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public String sendModuleMessage(String text, ModuleQueue queue) throws JMSException {
-    	Connection connection=null;
-    	try {
-            connection = connectionFactory.createConnection();
-            final Session session = JMSUtils.connectToQueue(connection);
+    public String sendModuleMessage(String text, ModuleQueue queue, String function) throws JMSException {
+        try (Connection connection = connectionFactory.createConnection();
+             Session session = connection.createSession(false, 1);
+             MessageProducer producer = session.createProducer(exchangeQueue);
+        ) {
 
             TextMessage message = session.createTextMessage();
             message.setText(text);
+            message.setStringProperty(MessageConstants.JMS_FUNCTION_PROPERTY, function);
 
-            switch (queue) {
-                case EXCHANGE:
-                    session.createProducer(exchangeQueue).send(message);
-                    break;
-                default:
-                    LOG.error("[ Sending Queue is not implemented ]");
-                    break;
-            }
+            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+            producer.send(message);
 
+            LOG.debug("SendMessage-queue:{}, message:{}", queue, message);
             return message.getJMSMessageID();
+
         } catch (JMSException e) {
-            LOG.error("[ Error when sending data source message. {}] {}",text, e.getMessage());
+            LOG.error("[ Error when sending data source message. {}] {}", text, e.getMessage());
             throw new JMSException(e.getMessage());
-        } finally {
-        	JMSUtils.disconnectQueue(connection);
         }
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public String sendEventBusMessage(String text, String serviceName) throws JMSException {
-    	Connection connection=null;
-    	try {
-            connection = connectionFactory.createConnection();
-            final Session session = JMSUtils.connectToQueue(connection);
-
+    public String sendEventBusMessage(String text, String serviceName, String function) throws JMSException {
+        try (Connection connection = connectionFactory.createConnection();
+             Session session = connection.createSession(false, 1);
+             MessageProducer producer = session.createProducer(eventBus);
+        ) {
             TextMessage message = session.createTextMessage();
             message.setText(text);
             message.setStringProperty(ExchangeModelConstants.SERVICE_NAME, serviceName);
-
-            session.createProducer(eventBus).send(message);
-
+            message.setStringProperty(MessageConstants.JMS_FUNCTION_PROPERTY, function);
+            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+            producer.send(message);
             return message.getJMSMessageID();
         } catch (JMSException e) {
-            LOG.error("[ Error when sending message. {}] {}",text, e.getMessage());
-            throw new JMSException(e.getMessage());
-        } finally {
-        	JMSUtils.disconnectQueue(connection);
+            LOG.error(e.toString(),e);
+            throw e;
         }
     }
 
