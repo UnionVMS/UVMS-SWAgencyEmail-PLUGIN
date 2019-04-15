@@ -17,6 +17,7 @@ import javax.annotation.PreDestroy;
 import javax.ejb.*;
 import javax.jms.JMSException;
 
+import eu.europa.ec.fisheries.schema.exchange.registry.v1.ExchangeRegistryMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,11 +25,9 @@ import eu.europa.ec.fisheries.schema.exchange.service.v1.CapabilityListType;
 import eu.europa.ec.fisheries.schema.exchange.service.v1.ServiceType;
 import eu.europa.ec.fisheries.schema.exchange.service.v1.SettingListType;
 import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
-import eu.europa.ec.fisheries.uvms.exchange.model.exception.ExchangeModelMarshallException;
 import eu.europa.ec.fisheries.uvms.exchange.model.mapper.ExchangeModuleRequestMapper;
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.mapper.ServiceMapper;
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.producer.PluginMessageProducer;
-import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.service.ExchangeService;
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.service.FileHandlerBean;
 import java.util.Map.Entry;
 
@@ -48,9 +47,6 @@ public class StartupBean extends PluginDataHolder {
 
     @EJB
     PluginMessageProducer messageProducer;
-
-    @EJB
-    ExchangeService service;
 
     @EJB
     FileHandlerBean fileHandler;
@@ -120,8 +116,8 @@ public class StartupBean extends PluginDataHolder {
         setWaitingForResponse(true);
         try {
             String registerServiceRequest = ExchangeModuleRequestMapper.createRegisterServiceRequest(serviceType, capabilities, settingList);
-            String correlationId = messageProducer.sendEventBusMessage(registerServiceRequest, ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE);
-        } catch (JMSException | ExchangeModelMarshallException e) {
+            String correlationId = messageProducer.sendEventBusMessage(registerServiceRequest, ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE, ExchangeRegistryMethod.REGISTER_SERVICE.value());
+        } catch (JMSException | RuntimeException e) {
             LOG.error("Failed to send registration message to {}", ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE);
             setWaitingForResponse(false);
         }
@@ -132,8 +128,8 @@ public class StartupBean extends PluginDataHolder {
         LOG.info("Unregistering from Exchange Module");
         try {
             String unregisterServiceRequest = ExchangeModuleRequestMapper.createUnregisterServiceRequest(serviceType);
-            String correlationId = messageProducer.sendEventBusMessage(unregisterServiceRequest, ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE);
-        } catch (JMSException | ExchangeModelMarshallException e) {
+            String correlationId = messageProducer.sendEventBusMessage(unregisterServiceRequest, ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE, ExchangeRegistryMethod.UNREGISTER_SERVICE.value());
+        } catch (JMSException | RuntimeException e) {
             LOG.error("Failed to send unregistration message to {}", ExchangeModelConstants.EXCHANGE_REGISTER_SERVICE);
         }
     }
