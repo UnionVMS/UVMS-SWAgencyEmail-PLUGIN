@@ -15,8 +15,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.jms.*;
 
 import eu.europa.ec.fisheries.uvms.commons.message.api.MessageConstants;
@@ -30,7 +28,7 @@ import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.constants.ModuleQueue;
 @LocalBean
 public class PluginMessageProducer {
 
-    final static Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PluginMessageProducer.class);
 
     @Resource(mappedName = "java:/" + ExchangeModelConstants.EXCHANGE_MESSAGE_IN_QUEUE)
     private Queue exchangeQueue;
@@ -41,10 +39,6 @@ public class PluginMessageProducer {
 
     @Resource(mappedName = "java:/ConnectionFactory")
     private ConnectionFactory connectionFactory;
-
-    @PostConstruct
-    public void resourceLookup() {
-    }
 
     public void sendResponseMessage(String text, TextMessage requestMessage) throws JMSException {
         try (Connection connection = connectionFactory.createConnection();

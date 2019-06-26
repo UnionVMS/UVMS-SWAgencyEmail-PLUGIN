@@ -48,7 +48,7 @@ import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.service.PluginService;
 })
 public class PluginNameEventBusListener implements MessageListener {
 
-    final static Logger LOG = LoggerFactory.getLogger(PluginNameEventBusListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PluginNameEventBusListener.class);
 
     @EJB
     PluginService service;
@@ -77,35 +77,35 @@ public class PluginNameEventBusListener implements MessageListener {
                 case SET_CONFIG:
                     SetConfigRequest setConfigRequest = JAXBMarshaller.unmarshallTextMessage(textMessage, SetConfigRequest.class);
                     AcknowledgeTypeType setConfig = service.setConfig(setConfigRequest.getConfigurations());
-                    AcknowledgeType setConfigAck = ExchangePluginResponseMapper.mapToAcknowlegeType(textMessage.getJMSMessageID(), setConfig);
+                    AcknowledgeType setConfigAck = ExchangePluginResponseMapper.mapToAcknowledgeType(setConfig);
                     responseMessage = ExchangePluginResponseMapper.mapToSetConfigResponse(startup.getRegisterClassName(), setConfigAck);
                     break;
                 case SET_COMMAND:
                     SetCommandRequest setCommandRequest = JAXBMarshaller.unmarshallTextMessage(textMessage, SetCommandRequest.class);
                     AcknowledgeTypeType setCommand = service.setCommand(setCommandRequest.getCommand());
-                    AcknowledgeType setCommandAck = ExchangePluginResponseMapper.mapToAcknowlegeType(textMessage.getJMSMessageID(), setCommandRequest.getCommand().getUnsentMessageGuid(), setCommand);
+                    AcknowledgeType setCommandAck = ExchangePluginResponseMapper.mapToAcknowledgeType(setCommandRequest.getCommand().getLogId(), setCommandRequest.getCommand().getUnsentMessageGuid(), setCommand);
                     responseMessage = ExchangePluginResponseMapper.mapToSetCommandResponse(startup.getRegisterClassName(), setCommandAck);
                     break;
                 case SET_REPORT:
                     SetReportRequest setReportRequest = JAXBMarshaller.unmarshallTextMessage(textMessage, SetReportRequest.class);
                     AcknowledgeTypeType setReport = service.setReport(setReportRequest.getReport());
-                    AcknowledgeType setReportAck = ExchangePluginResponseMapper.mapToAcknowlegeType(textMessage.getJMSMessageID(), setReport);
+                    AcknowledgeType setReportAck = ExchangePluginResponseMapper.mapToAcknowledgeType(setReportRequest.getReport().getLogId(), setReport);
                     responseMessage = ExchangePluginResponseMapper.mapToSetReportResponse(startup.getRegisterClassName(), setReportAck);
                     break;
                 case START:
-                    StartRequest startRequest = JAXBMarshaller.unmarshallTextMessage(textMessage, StartRequest.class);
+                    JAXBMarshaller.unmarshallTextMessage(textMessage, StartRequest.class);
                     AcknowledgeTypeType start = service.start();
-                    AcknowledgeType startAck = ExchangePluginResponseMapper.mapToAcknowlegeType(textMessage.getJMSMessageID(), start);
+                    AcknowledgeType startAck = ExchangePluginResponseMapper.mapToAcknowledgeType(start);
                     responseMessage = ExchangePluginResponseMapper.mapToStartResponse(startup.getRegisterClassName(), startAck);
                     break;
                 case STOP:
-                    StopRequest stopRequest = JAXBMarshaller.unmarshallTextMessage(textMessage, StopRequest.class);
+                    JAXBMarshaller.unmarshallTextMessage(textMessage, StopRequest.class);
                     AcknowledgeTypeType stop = service.stop();
-                    AcknowledgeType stopAck = ExchangePluginResponseMapper.mapToAcknowlegeType(textMessage.getJMSMessageID(), stop);
+                    AcknowledgeType stopAck = ExchangePluginResponseMapper.mapToAcknowledgeType(stop);
                     responseMessage = ExchangePluginResponseMapper.mapToStopResponse(startup.getRegisterClassName(), stopAck);
                     break;
                 case PING:
-                    PingRequest pingRequest = JAXBMarshaller.unmarshallTextMessage(textMessage, PingRequest.class);
+                    JAXBMarshaller.unmarshallTextMessage(textMessage, PingRequest.class);
                     responseMessage = ExchangePluginResponseMapper.mapToPingResponse(startup.isIsEnabled(), startup.isIsEnabled());
                     break;
                 default:
