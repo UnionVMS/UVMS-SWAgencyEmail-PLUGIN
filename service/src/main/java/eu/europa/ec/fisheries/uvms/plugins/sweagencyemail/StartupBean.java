@@ -12,15 +12,7 @@ copy of the GNU General Public License along with the IFDM Suite. If not, see <h
 package eu.europa.ec.fisheries.uvms.plugins.sweagencyemail;
 
 import eu.europa.ec.fisheries.schema.exchange.plugin.types.v1.PluginType;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.*;
-import javax.jms.JMSException;
-
 import eu.europa.ec.fisheries.schema.exchange.registry.v1.ExchangeRegistryMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import eu.europa.ec.fisheries.schema.exchange.service.v1.CapabilityListType;
 import eu.europa.ec.fisheries.schema.exchange.service.v1.ServiceType;
 import eu.europa.ec.fisheries.schema.exchange.service.v1.SettingListType;
@@ -29,6 +21,13 @@ import eu.europa.ec.fisheries.uvms.exchange.model.mapper.ExchangeModuleRequestMa
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.mapper.ServiceMapper;
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.producer.PluginMessageProducer;
 import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.service.FileHandlerBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.*;
+import javax.jms.JMSException;
 import java.util.Map.Entry;
 
 @Singleton

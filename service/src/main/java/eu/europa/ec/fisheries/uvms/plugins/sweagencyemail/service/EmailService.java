@@ -12,21 +12,14 @@ copy of the GNU General Public License along with the IFDM Suite. If not, see <h
 package eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.service;
 
 import eu.europa.ec.fisheries.schema.exchange.plugin.types.v1.EmailType;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import se.havochvatten.common.ejb.ws.WsClientUtil;
-import se.havochvatten.service.client.infraws.v1_0.AddressType;
-import se.havochvatten.service.client.infraws.v1_0.BodyContentType;
-import se.havochvatten.service.client.infraws.v1_0.EMail;
+import se.havochvatten.service.client.infraws.v1_0.*;
 import se.havochvatten.service.client.infraws.v1_0.EMail.Body;
-import se.havochvatten.service.client.infraws.v1_0.InfraCatchException;
-import se.havochvatten.service.client.infraws.v1_0.InfraPortType;
-import se.havochvatten.service.client.infraws.v1_0.InfraService;
-import se.havochvatten.service.client.infraws.v1_0.SendEMail;
+
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
 
 /**
  **/
