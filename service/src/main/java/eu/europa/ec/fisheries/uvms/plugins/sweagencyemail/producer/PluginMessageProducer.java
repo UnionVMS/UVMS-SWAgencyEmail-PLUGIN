@@ -11,18 +11,15 @@ copy of the GNU General Public License along with the IFDM Suite. If not, see <h
  */
 package eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.producer;
 
-import javax.annotation.PostConstruct;
+import eu.europa.ec.fisheries.uvms.commons.message.api.MessageConstants;
+import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.jms.*;
-
-import eu.europa.ec.fisheries.uvms.commons.message.api.MessageConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import eu.europa.ec.fisheries.uvms.exchange.model.constant.ExchangeModelConstants;
-import eu.europa.ec.fisheries.uvms.plugins.sweagencyemail.constants.ModuleQueue;
 
 @Stateless
 @LocalBean
@@ -55,7 +52,7 @@ public class PluginMessageProducer {
         }
     }
 
-    public String sendModuleMessage(String text, ModuleQueue queue, String function) throws JMSException {
+    public String sendModuleMessage(String text, String function) throws JMSException {
         try (Connection connection = connectionFactory.createConnection();
              Session session = connection.createSession(false, 1);
              MessageProducer producer = session.createProducer(exchangeQueue);
@@ -68,7 +65,7 @@ public class PluginMessageProducer {
             producer.setDeliveryMode(DeliveryMode.PERSISTENT);
             producer.send(message);
 
-            LOG.debug("SendMessage-queue:{}, message:{}", queue, message);
+            LOG.debug("SendMessage-queue:{}, message:{}", exchangeQueue.getQueueName(), message);
             return message.getJMSMessageID();
 
         } catch (JMSException e) {

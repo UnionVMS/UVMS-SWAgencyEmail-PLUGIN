@@ -12,6 +12,7 @@ copy of the GNU General Public License along with the IFDM Suite. If not, see <h
 package eu.europa.ec.fisheries.uvms.plugins.sweagencyemail;
 
 import eu.europa.ec.fisheries.schema.exchange.movement.v1.SetReportMovementType;
+
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
