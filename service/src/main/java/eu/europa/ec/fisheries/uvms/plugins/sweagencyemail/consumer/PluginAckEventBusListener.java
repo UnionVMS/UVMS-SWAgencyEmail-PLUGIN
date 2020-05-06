@@ -27,10 +27,9 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
 @MessageDriven(mappedName = ExchangeModelConstants.PLUGIN_EVENTBUS, activationConfig = {
-    @ActivationConfigProperty(propertyName = "messagingType", propertyValue = ExchangeModelConstants.CONNECTION_TYPE),
     @ActivationConfigProperty(propertyName = "subscriptionDurability", propertyValue = "Durable"),
     @ActivationConfigProperty(propertyName = "destinationType", propertyValue = ExchangeModelConstants.DESTINATION_TYPE_TOPIC),
-    @ActivationConfigProperty(propertyName = "destination", propertyValue = ExchangeModelConstants.EVENTBUS_NAME)
+    @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = ExchangeModelConstants.PLUGIN_EVENTBUS)
 })
 public class PluginAckEventBusListener implements MessageListener {
 
@@ -40,7 +39,6 @@ public class PluginAckEventBusListener implements MessageListener {
     StartupBean startupService;
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void onMessage(Message inMessage) {
 
         LOG.info("Eventbus listener for swagencyemail at selector: {} got a message", startupService.getPluginResponseSubscriptionName());
