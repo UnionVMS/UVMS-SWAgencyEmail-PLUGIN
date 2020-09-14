@@ -20,7 +20,7 @@
         <common.ejb.version>1.0.8</common.ejb.version>
 
         <uvms.common.version>4.1.7</uvms.common.version>
-        <exchange.model.version>5.2.7-UVMS</exchange.model.version>
+        <exchange.model.version>5.3.3-UVMS</exchange.model.version>
 
         <release.branch.name>uvms-3.0.0-boba-fett</release.branch.name>
     </properties>
